@@ -3,17 +3,15 @@
  * https://github.com/binhake/Facebook_Verified_Badge
  *
  * Adds a cosmetic verified badge next to a name on Facebook:
- *   - Home feed (/):        the signed-in user's name, 12px badge
- *   - Profile (/username):  the profile header name, 24px badge
+ *   - Home feed (/):        the signed-in user's name
+ *   - Profile (/username):  the profile header name
  *
+ * Settings come from the options page (see src/shared/settings.js).
  * The badge only exists in the local browser's DOM. Nothing is sent to Facebook.
  */
-(function () {
+(function (FBVB) {
   'use strict';
 
-  const ONLY_OWN_PROFILE = false;
-  const DEBUG = false;
-  const RUN_INTERVAL_MS = 1000;
   const VIEWER_MAX_TRIES = 10;
 
   const LOG_PREFIX = '[FBVB]';
@@ -26,12 +24,7 @@
   const SVG_NS = 'http://www.w3.org/2000/svg';
   const NBSP = '\u00a0';
 
-  const BADGE_TITLE = getMessage('badgeTitle', 'Verified account');
   const BADGE_PATH = 'M8.004 1.183a1.5 1.5 0 0 1 2.049-.55L12 1.759 13.947.634a1.5 1.5 0 0 1 2.05.549L17.045 3H19.5A1.5 1.5 0 0 1 21 4.5v2.453l1.817 1.05a1.5 1.5 0 0 1 .55 2.049L22.241 12l1.124 1.947a1.5 1.5 0 0 1-.55 2.05L21 17.044V19.5a1.5 1.5 0 0 1-1.5 1.5h-2.454l-1.05 1.817a1.5 1.5 0 0 1-2.048.549L12 22.241l-1.948 1.125a1.5 1.5 0 0 1-2.049-.549L6.955 21H4.5A1.5 1.5 0 0 1 3 19.5v-2.455l-1.817-1.049a1.5 1.5 0 0 1-.549-2.049L1.758 12 .634 10.053a1.5 1.5 0 0 1 .549-2.05L3 6.954V4.5A1.5 1.5 0 0 1 4.5 3h2.454l1.05-1.817zm9.703 9.024a1 1 0 0 0-1.414-1.414l-5.44 5.44a.5.5 0 0 1-.707 0l-2.439-2.44a1 1 0 0 0-1.414 1.414l2.44 2.44a2.5 2.5 0 0 0 3.535 0l5.44-5.44z';
-  const BADGE_SIZE = {
-    home: 12,
-    profile: 24
-  };
 
   const RESERVED_PATHS = new Set([
     'home.php', 'groups', 'watch', 'marketplace', 'gaming', 'events', 'pages', 'friends',
@@ -44,6 +37,8 @@
   const VIEWER_ID_RE = /"CurrentUserInitialData",\[\],\{[^{}]*?"USER_ID":"(\d+)"/;
 
   const appState = {
+    settings: FBVB.normalizeSettings(),
+    translate: FBVB.createTranslator('auto'),
     lastUrl: '',
     timerId: 0,
     viewer: null,
@@ -53,17 +48,9 @@
 
   // ===== Utilities =====
 
-  function getMessage(key, fallback) {
-    try {
-      return chrome.i18n.getMessage(key) || fallback;
-    } catch (err) {
-      return fallback;
-    }
-  }
-
-  // Deduplicated so a 1s interval does not flood the console
+  // Deduplicated so a short interval does not flood the console
   function log(message) {
-    if (!DEBUG || message === appState.lastLog) {
+    if (!appState.settings.debug || message === appState.lastLog) {
       return;
     }
     appState.lastLog = message;
@@ -249,7 +236,7 @@
     const titleName = getNameFromTitle();
     const viewer = getViewer();
 
-    if (ONLY_OWN_PROFILE && !isOwnProfile(titleName)) {
+    if (appState.settings.onlyOwnProfile && !isOwnProfile(titleName)) {
       log('Profile: not the signed-in user, skipped');
       return null;
     }
@@ -296,17 +283,18 @@
   // Mirrors Facebook's own badge markup so it inherits the native styling.
   // Built with DOM APIs instead of innerHTML to stay compatible with Trusted Types.
   function createBadge(size) {
+    const title = appState.translate('badgeTitle');
     const svg = createEl('svg', {
       'viewBox': '0 0 24 24',
       'width': String(size),
       'height': String(size),
       'fill': 'currentColor',
       'role': 'img',
-      'title': BADGE_TITLE,
+      'title': title,
       'class': 'x14rh7hd x1lliihq x1tzjh5l x1k90msu x2h7rmj x1qfuztq',
       'style': '--x-color: var(--accent);'
     }, [
-      createEl('title', {}, [BADGE_TITLE]),
+      createEl('title', {}, [title]),
       createEl('path', { 'd': BADGE_PATH })
     ]);
 
@@ -371,11 +359,19 @@
     });
   }
 
+  function getBadgeSize(mode) {
+    return mode === 'home' ? appState.settings.badgeSizeHome : appState.settings.badgeSizeProfile;
+  }
+
   function run() {
     try {
       if (location.href !== appState.lastUrl) {
         appState.lastUrl = location.href;
         resetPatches();
+      }
+
+      if (!appState.settings.enabled) {
+        return;
       }
 
       const mode = detectMode();
@@ -389,20 +385,58 @@
 
       const target = mode === 'home' ? findHomeTarget() : findProfileTarget();
       if (target) {
-        patchName(target, BADGE_SIZE[mode]);
+        patchName(target, getBadgeSize(mode));
       }
     } catch (err) {
       console.error(LOG_PREFIX, err);
     }
   }
 
+  // ===== Settings =====
+
+  async function applySettings() {
+    const [settings, languages] = await Promise.all([
+      FBVB.loadSettings(),
+      FBVB.loadImportedLanguages()
+    ]);
+    appState.settings = settings;
+    appState.translate = FBVB.createTranslator(settings.language, languages);
+    appState.lastLog = '';
+  }
+
+  function restartTimer() {
+    clearInterval(appState.timerId);
+    appState.timerId = setInterval(run, appState.settings.intervalMs);
+  }
+
+  // Options page changes take effect live: drop current badges and redraw with the new settings
+  async function handleStorageChange(changes) {
+    if (!(FBVB.SETTINGS_KEY in changes) && !(FBVB.LANGUAGES_KEY in changes)) {
+      return;
+    }
+    await applySettings();
+    resetPatches();
+    log('Settings updated');
+    run();
+    restartTimer();
+  }
+
   // ===== Bootstrap =====
 
-  function init() {
+  async function init() {
+    try {
+      await applySettings();
+    } catch (err) {
+      console.error(LOG_PREFIX, 'Could not load settings, using defaults', err);
+    }
     log('Loaded on ' + location.href);
     run();
-    appState.timerId = setInterval(run, RUN_INTERVAL_MS);
+    restartTimer();
+
+    if (typeof chrome !== 'undefined' && chrome.storage) {
+      chrome.storage.onChanged.addListener(handleStorageChange);
+    }
   }
 
   init();
-})();
+})(globalThis.FBVB);

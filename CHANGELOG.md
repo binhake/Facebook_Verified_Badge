@@ -3,6 +3,18 @@
 All notable changes to this project are documented here.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project adheres to [Semantic Versioning](https://semver.org/).
 
+## [1.3.0] - 2026-10-15
+
+### Added
+- Settings UI, available from the toolbar popup and the extension options page: enable/disable, only-own-profile, debug logging, badge sizes, re-check interval, display language, reset to defaults.
+- Custom languages: download a JSON template, translate it and import it; imported languages can be removed. Missing keys fall back to English.
+- Settings apply live to open Facebook tabs through `chrome.storage.onChanged`.
+- Settings page screenshot in the README; illustrations now use the author's name.
+
+### Changed
+- Settings moved from constants in `src/content.js` to `chrome.storage` (new `storage` permission).
+- Badge tooltip translations moved from `_locales/` to the shared language system (`src/shared/settings.js`), so it follows the language chosen in the settings.
+
 ## [1.2.0] - 2026-10-15
 
 ### Added

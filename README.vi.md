@@ -8,7 +8,7 @@ Extension trình duyệt gọn nhẹ, hiển thị **huy hiệu tích xanh trang
 
 [![Manifest V3](https://img.shields.io/badge/Manifest-V3-0866ff)](https://developer.chrome.com/docs/extensions/develop/migrate/what-is-mv3)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
-![No permissions](https://img.shields.io/badge/permissions-none-brightgreen)
+![Permissions: storage](https://img.shields.io/badge/permissions-storage%20only-brightgreen)
 ![Chromium](https://img.shields.io/badge/Chrome%20%7C%20Edge%20%7C%20Brave-supported-blue)
 
 [English](README.md) · Tiếng Việt
@@ -26,7 +26,8 @@ Extension trình duyệt gọn nhẹ, hiển thị **huy hiệu tích xanh trang
 - [Tính năng](#tính-năng)
 - [Cách hoạt động](#cách-hoạt-động)
 - [Cài đặt](#cài-đặt)
-- [Cấu hình](#cấu-hình)
+- [Tuỳ chỉnh](#tuỳ-chỉnh)
+- [Ngôn ngữ](#ngôn-ngữ)
 - [Xử lý sự cố](#xử-lý-sự-cố)
 - [Cấu trúc dự án](#cấu-trúc-dự-án)
 - [Quyền riêng tư](#quyền-riêng-tư)
@@ -45,12 +46,14 @@ Extension trình duyệt gọn nhẹ, hiển thị **huy hiệu tích xanh trang
 
 ## Tính năng
 
-- **Không xin quyền nào.** Chỉ có một content script chạy trên `www.facebook.com` và `web.facebook.com`; không background, không storage, không gửi request.
+- **Giao diện tuỳ chỉnh.** Bấm icon extension trên thanh công cụ để bật/tắt huy hiệu, đổi kích thước, chu kỳ, bật log gỡ lỗi hay đổi ngôn ngữ — áp dụng ngay cho các tab Facebook đang mở.
+- **Thêm ngôn ngữ tuỳ ý.** Có sẵn tiếng Anh và tiếng Việt; tải file mẫu, dịch rồi import bất kỳ ngôn ngữ nào dưới dạng file `.json`.
+- **Ít quyền nhất có thể.** Chỉ xin `storage` (để nhớ tuỳ chọn) và một content script trên `www.facebook.com` / `web.facebook.com`; không background, không gửi request.
 - **Giống hệt huy hiệu thật.** Markup chèn vào sao chép đúng cấu trúc huy hiệu của Facebook (cùng class, màu `--accent`), nên tự đổi theo giao diện sáng/tối.
 - **Ai cài cũng chạy.** Tên tài khoản đang đăng nhập được đọc từ dữ liệu Facebook nhúng sẵn trong trang, không cần sửa code.
 - **Hiểu SPA.** Facebook không tải lại trang khi chuyển trang; extension kiểm tra lại mỗi giây, gỡ huy hiệu cũ khi đổi URL và tự gắn lại nếu React vẽ lại phần tên.
 - **An toàn với React.** Sửa trực tiếp text node có sẵn thay vì thay cả element, dựng huy hiệu bằng DOM API (không `innerHTML`) nên không xung đột React / Trusted Types.
-- **Đa ngôn ngữ.** Tên, mô tả extension và tooltip huy hiệu có tiếng Anh và tiếng Việt (`_locales/`).
+- **Tự chọn ngôn ngữ.** Mặc định trang tuỳ chỉnh và tooltip huy hiệu theo ngôn ngữ trình duyệt, không có thì dùng tiếng Anh.
 
 ## Cách hoạt động
 
@@ -65,14 +68,14 @@ Extension trình duyệt gọn nhẹ, hiển thị **huy hiệu tích xanh trang
    | Trang | Thứ tự cách tìm |
    |---|---|
    | Trang chủ | 1. Tên tài khoản đang đăng nhập (từ `CurrentUserInitialData`), ưu tiên ở cột điều hướng bên trái · 2. Dự phòng: `span.x1lliihq` đầu tiên đang hiển thị và có chữ |
-   | Trang cá nhân | 1. Tên trong `<title>` (`(3) Nguyễn Văn A \| Facebook`) · 2. Tên tài khoản đang đăng nhập trong `h1` / `[role="main"]` · 3. `span.x1lliihq` có chứa span biệt danh · 4. Text bất kỳ đang hiển thị trong `[role="main"] h1` |
+   | Trang cá nhân | 1. Tên trong `<title>` (`(3) Nguyễn Trọng Bình \| Facebook`) · 2. Tên tài khoản đang đăng nhập trong `h1` / `[role="main"]` · 3. `span.x1lliihq` có chứa span biệt danh · 4. Text bất kỳ đang hiển thị trong `[role="main"] h1` |
 
    Cần nhiều cách vì Facebook không phải lúc nào cũng đổi `<title>` khi chuyển trang (có lúc vẫn để `(1) Facebook`), và DOM khác nhau giữa các tài khoản / bản thử nghiệm A/B.
 3. **Chèn huy hiệu.** Text tên được chuẩn hoá thành `Tên&nbsp;`, huy hiệu được chèn trước span biệt danh (hoặc cuối element):
 
    ```html
    <span class="x1lliihq" data-fbvb="">
-     Nguyễn Văn A&nbsp;
+     Nguyễn Trọng Bình&nbsp;
      <span data-fbvb-badge="">
        <div class="x1rg5ohu"><span class="xjp7ctv"><div tabindex="0">
          <span class="x3nfvp2 x11njtxf">
@@ -82,7 +85,7 @@ Extension trình duyệt gọn nhẹ, hiển thị **huy hiệu tích xanh trang
          </span>
        </div></span></div>
      </span>
-     <span class="x1q74xe4 x1fcty0u"> (nguyenvana)</span>
+     <span class="x1q74xe4 x1fcty0u"> (binhake)</span>
    </span>
    ```
 
@@ -103,31 +106,69 @@ Extension chưa có trên Chrome Web Store; cài ở chế độ nhà phát tri�
 3. Bật **Developer mode** (Chế độ dành cho nhà phát triển).
 4. Bấm **Load unpacked** (Tải tiện ích đã giải nén) và chọn thư mục chứa `manifest.json`.
 5. Mở hoặc tải lại Facebook.
+6. Tuỳ chọn: ghim extension từ menu hình mảnh ghép để mở phần tuỳ chỉnh chỉ với một cú bấm.
 
 Cập nhật: kéo code mới (hoặc giải nén ZIP mới đè lên thư mục cũ), bấm **Reload** trên thẻ extension rồi tải lại Facebook.
 
 > [!NOTE]
 > Hãy chọn **thư mục**, đừng cài file `.crx`. Trình duyệt Chromium tự tắt các extension `.crx` không đến từ cửa hàng chính thức.
 
-## Cấu hình
+## Tuỳ chỉnh
 
-Các thiết lập là hằng số ở đầu file [`src/content.js`](src/content.js). Sửa xong bấm **Reload** ở `chrome://extensions`.
+Bấm icon extension trên thanh công cụ (ghim trước từ menu mảnh ghép), hoặc vào **Chi tiết → Tuỳ chọn tiện ích** ở `chrome://extensions`. Mọi thay đổi được lưu tự động và áp dụng ngay cho các tab Facebook đang mở — không cần tải lại.
 
-| Hằng số | Mặc định | Ý nghĩa |
+![Trang tuỳ chỉnh ở giao diện sáng (tiếng Việt) và tối (tiếng Anh)](docs/images/options.png)
+
+| Tuỳ chọn | Mặc định | Ý nghĩa |
 |---|---|---|
-| `ONLY_OWN_PROFILE` | `false` | `true`: chỉ gắn huy hiệu trên trang cá nhân của chính tài khoản đang đăng nhập. `false`: gắn trên mọi trang cá nhân bạn mở. |
-| `DEBUG` | `false` | In từng bước ra Console (DevTools) với tiền tố `[FBVB]`. |
-| `RUN_INTERVAL_MS` | `1000` | Chu kỳ kiểm tra lại trang (ms). Nhỏ hơn = huy hiệu hiện nhanh hơn sau khi chuyển trang; lớn hơn = nhẹ máy hơn. |
-| `VIEWER_MAX_TRIES` | `10` | Số lượt thử đọc tên tài khoản đang đăng nhập trước khi bỏ cuộc (mỗi lần tải trang). |
-| `BADGE_SIZE` | `{ home: 12, profile: 24 }` | Kích thước huy hiệu (px) theo loại trang. |
+| Bật huy hiệu | Bật | Tắt để gỡ mọi huy hiệu mà không cần gỡ extension. |
+| Chỉ trên trang cá nhân của tôi | Tắt | Bật: chỉ gắn trên trang của tài khoản đang đăng nhập. Tắt: gắn trên mọi trang cá nhân bạn mở. |
+| Ghi log gỡ lỗi | Tắt | In từng bước ra Console (DevTools) với tiền tố `[FBVB]` (xem [Xử lý sự cố](#xử-lý-sự-cố)). |
+| Cỡ huy hiệu trang cá nhân | `24` px | Trong khoảng 8–64. |
+| Cỡ huy hiệu trang chủ | `12` px | Trong khoảng 8–48. |
+| Chu kỳ kiểm tra | `1000` ms | Trong khoảng 250–10000. Nhỏ hơn = huy hiệu hiện nhanh hơn khi chuyển trang; lớn hơn = nhẹ máy hơn. |
+| Ngôn ngữ hiển thị | Tự động | Ngôn ngữ của trang tuỳ chỉnh và tooltip huy hiệu. *Tự động* theo ngôn ngữ trình duyệt. |
+| Khôi phục mặc định | — | Đưa các tuỳ chọn trên về mặc định. Ngôn ngữ đã import được giữ lại. |
+
+Tuỳ chọn được lưu bằng `chrome.storage.sync`, nên đi theo hồ sơ trình duyệt nếu bạn bật đồng bộ.
+
+## Ngôn ngữ
+
+Trang tuỳ chỉnh và tooltip huy hiệu (`title` của huy hiệu) dịch được. Tiếng Anh và tiếng Việt có sẵn; ngôn ngữ khác thêm ngay trong trang tuỳ chỉnh:
+
+1. Bấm **Tải file mẫu** — nhận file `fbvb-language-template.json` chứa toàn bộ chuỗi tiếng Anh.
+2. Đặt `code` (mã [ISO 639-1](https://vi.wikipedia.org/wiki/Danh_s%C3%A1ch_m%C3%A3_ISO_639-1), có thể kèm vùng như `pt-BR`) và `name`, rồi dịch phần giá trị trong `messages`. Giữ nguyên các khoá và `{placeholder}`.
+3. Bấm **Import file ngôn ngữ** và chọn file `.json`. Ngôn ngữ mới xuất hiện trong danh sách **Ngôn ngữ hiển thị** và mục **Đã import**, xoá được bất cứ lúc nào.
+
+```json
+{
+  "code": "fr",
+  "name": "Français",
+  "messages": {
+    "badgeTitle": "Compte vérifié",
+    "optionsSubtitle": "Badge décoratif, visible uniquement dans votre navigateur.",
+    "importSuccess": "Langue importée : {name}"
+  }
+}
+```
+
+- Khoá nào thiếu sẽ dùng bản tiếng Anh, nên dịch một phần vẫn được.
+- Khoá lạ bị bỏ qua và chỉ giữ giá trị dạng chữ; không gì trong file được thực thi, chuỗi được chèn dưới dạng text chứ không phải HTML.
+- Import ngôn ngữ trùng `code` với ngôn ngữ có sẵn (`en`, `vi`) sẽ ghi đè; xoá bản import thì quay về bản có sẵn.
+- Ngôn ngữ đã import được lưu cục bộ (`chrome.storage.local`) trên trình duyệt hiện tại.
+
+Muốn bản dịch của bạn có sẵn trong extension? Mở pull request thêm vào `BUILTIN_LANGUAGES` trong [`src/shared/settings.js`](src/shared/settings.js).
+
+> [!NOTE]
+> Khi mở tuỳ chỉnh dạng popup trên thanh công cụ, nút **Import file ngôn ngữ** sẽ mở trang tuỳ chỉnh đầy đủ trong tab mới, vì hộp chọn file làm popup tự đóng.
 
 ## Xử lý sự cố
 
 **Không thấy huy hiệu**
 
-1. Kiểm tra extension đang bật và đã **Reload** sau khi sửa.
+1. Kiểm tra extension đang bật, **Bật huy hiệu** đang bật, và đã **Reload** extension sau khi sửa code.
 2. Đảm bảo URL là trang được hỗ trợ (xem [Hình minh hoạ](#hình-minh-hoạ)); `m.facebook.com` và các path như `/username/photos` không được hỗ trợ.
-3. Đặt `DEBUG = true`, Reload extension, tải lại Facebook, mở DevTools (<kbd>F12</kbd>) → **Console** và lọc `FBVB`:
+3. Bật **Ghi log gỡ lỗi** trong phần tuỳ chỉnh, tải lại Facebook, mở DevTools (<kbd>F12</kbd>) → **Console** và lọc `FBVB`:
 
    | Log | Ý nghĩa |
    |---|---|
@@ -186,23 +227,27 @@ Khi tạo issue, hãy chạy đoạn dưới trong Console **ngay trên trang kh
 
 ```
 Facebook_Verified_Badge/
-├── manifest.json          # Manifest V3, chỉ có content script
+├── manifest.json            # Manifest V3: content script, popup, trang tuỳ chỉnh
 ├── src/
-│   └── content.js         # Toàn bộ logic: nhận dạng trang, tìm tên, chèn huy hiệu
-├── _locales/
-│   ├── en/messages.json   # Chuỗi tiếng Anh (mặc định)
-│   └── vi/messages.json   # Chuỗi tiếng Việt
-├── icons/                 # Icon 16 / 48 / 128 px
-├── docs/images/           # Hình minh hoạ cho README
+│   ├── content.js           # Nhận dạng trang, tìm tên, chèn huy hiệu
+│   ├── shared/
+│   │   └── settings.js      # Mặc định, lưu trữ, ngôn ngữ có sẵn, import ngôn ngữ
+│   └── options/
+│       ├── options.html     # Giao diện tuỳ chỉnh (popup + tab tuỳ chọn)
+│       ├── options.css
+│       └── options.js
+├── _locales/                # Tên/mô tả extension cho trình duyệt (en, vi)
+├── icons/                   # Icon 16 / 48 / 128 px
+├── docs/images/             # Hình minh hoạ cho README
 ├── CHANGELOG.md
 ├── LICENSE
-├── README.md              # Tiếng Anh
-└── README.vi.md           # Tiếng Việt
+├── README.md                # Tiếng Anh
+└── README.vi.md             # Tiếng Việt
 ```
 
 ## Quyền riêng tư
 
-- Không xin quyền nào; content script chỉ chạy trên `www.facebook.com` và `web.facebook.com`.
+- Quyền duy nhất là `storage`, dùng để lưu tuỳ chọn và ngôn ngữ đã import. Content script chỉ chạy trên `www.facebook.com` và `web.facebook.com`.
 - Tên và ID tài khoản được đọc từ trang hiện tại trong bộ nhớ, chỉ dùng để tìm vị trí tên trên màn hình, không lưu và không gửi đi.
 - Không analytics, không tải code từ xa, không có request mạng.
 
@@ -218,10 +263,11 @@ Facebook_Verified_Badge/
 Rất hoan nghênh issue và pull request.
 
 1. Fork repo và tạo nhánh: `git checkout -b fix/profile-selector`.
-2. Giữ extension không xin quyền, không phụ thuộc thư viện ngoài.
+2. Không thêm thư viện ngoài, hạn chế xin thêm quyền.
 3. Theo đúng phong cách code hiện có (thụt 2 dấu cách, nháy đơn, khai báo `function`; xem `.editorconfig`).
-4. Thử trên cả `/` và một trang `/username` với `DEBUG = true` trước khi mở PR.
-5. Mô tả thay đổi; với các sửa selector, kèm kết quả đoạn lệnh chẩn đoán làm căn cứ.
+4. Thử trên cả `/` và một trang `/username` với **Ghi log gỡ lỗi** đang bật trước khi mở PR.
+5. Chuỗi giao diện mới phải thêm vào mọi ngôn ngữ trong `BUILTIN_LANGUAGES` (tiếng Anh là dự phòng).
+6. Mô tả thay đổi; với các sửa selector, kèm kết quả đoạn lệnh chẩn đoán làm căn cứ.
 
 ## Giấy phép
 

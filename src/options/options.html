@@ -1,0 +1,119 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Facebook Verified Badge</title>
+  <link rel="stylesheet" href="options.css">
+</head>
+<body>
+  <main class="page">
+    <header class="page-header">
+      <img class="page-icon" src="../../icons/icon48.png" width="40" height="40" alt="">
+      <div>
+        <h1 data-i18n="optionsTitle">Facebook Verified Badge</h1>
+        <p class="muted" data-i18n="optionsSubtitle"></p>
+      </div>
+    </header>
+
+    <section class="card">
+      <h2 data-i18n="sectionGeneral"></h2>
+
+      <label class="row">
+        <span class="row-text">
+          <span class="row-label" data-i18n="enabledLabel"></span>
+          <span class="row-hint" data-i18n="enabledHint"></span>
+        </span>
+        <input class="switch" type="checkbox" data-setting="enabled">
+      </label>
+
+      <label class="row">
+        <span class="row-text">
+          <span class="row-label" data-i18n="onlyOwnProfileLabel"></span>
+          <span class="row-hint" data-i18n="onlyOwnProfileHint"></span>
+        </span>
+        <input class="switch" type="checkbox" data-setting="onlyOwnProfile">
+      </label>
+
+      <label class="row">
+        <span class="row-text">
+          <span class="row-label" data-i18n="debugLabel"></span>
+          <span class="row-hint" data-i18n="debugHint"></span>
+        </span>
+        <input class="switch" type="checkbox" data-setting="debug">
+      </label>
+    </section>
+
+    <section class="card">
+      <h2 data-i18n="sectionAppearance"></h2>
+
+      <div class="preview" id="badgePreview">
+        <span class="preview-name">Nguyễn Trọng Bình <span class="preview-badge" data-preview="badgeSizeProfile"></span> <span class="muted">(binhake)</span></span>
+        <span class="preview-name preview-name-small">Nguyễn Trọng Bình <span class="preview-badge" data-preview="badgeSizeHome"></span></span>
+      </div>
+
+      <label class="row">
+        <span class="row-label" data-i18n="badgeSizeProfileLabel"></span>
+        <input class="number" type="number" step="1" data-setting="badgeSizeProfile">
+      </label>
+
+      <label class="row">
+        <span class="row-label" data-i18n="badgeSizeHomeLabel"></span>
+        <input class="number" type="number" step="1" data-setting="badgeSizeHome">
+      </label>
+
+      <label class="row">
+        <span class="row-text">
+          <span class="row-label" data-i18n="intervalLabel"></span>
+          <span class="row-hint" data-i18n="intervalHint"></span>
+        </span>
+        <input class="number" type="number" step="250" data-setting="intervalMs">
+      </label>
+    </section>
+
+    <section class="card">
+      <h2 data-i18n="sectionLanguage"></h2>
+
+      <label class="row">
+        <span class="row-label" data-i18n="languageLabel"></span>
+        <select class="select" id="languageSelect" data-setting="language"></select>
+      </label>
+
+      <div class="subheading" data-i18n="languageImported"></div>
+      <ul class="language-list" id="languageList"></ul>
+      <p class="muted empty" id="languageEmpty" data-i18n="noImportedLanguages"></p>
+
+      <div class="actions">
+        <button class="button button-primary" type="button" id="importButton" data-i18n="importLanguage"></button>
+        <button class="button" type="button" id="templateButton" data-i18n="exportTemplate"></button>
+        <input type="file" id="importInput" accept=".json,application/json" hidden>
+      </div>
+      <p class="row-hint" data-i18n="importHint"></p>
+    </section>
+
+    <footer class="page-footer">
+      <span class="muted" data-i18n="footerNote"></span>
+      <button class="button button-ghost" type="button" id="resetButton" data-i18n="resetDefaults"></button>
+    </footer>
+  </main>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+  <template id="tplLanguageItem">
+    <li class="language-item">
+      <span class="language-name"></span>
+      <code class="language-code"></code>
+      <button class="button button-ghost button-small language-remove" type="button"></button>
+    </li>
+  </template>
+
+  <template id="tplBadge">
+    <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+      <path d="M8.004 1.183a1.5 1.5 0 0 1 2.049-.55L12 1.759 13.947.634a1.5 1.5 0 0 1 2.05.549L17.045 3H19.5A1.5 1.5 0 0 1 21 4.5v2.453l1.817 1.05a1.5 1.5 0 0 1 .55 2.049L22.241 12l1.124 1.947a1.5 1.5 0 0 1-.55 2.05L21 17.044V19.5a1.5 1.5 0 0 1-1.5 1.5h-2.454l-1.05 1.817a1.5 1.5 0 0 1-2.048.549L12 22.241l-1.948 1.125a1.5 1.5 0 0 1-2.049-.549L6.955 21H4.5A1.5 1.5 0 0 1 3 19.5v-2.455l-1.817-1.049a1.5 1.5 0 0 1-.549-2.049L1.758 12 .634 10.053a1.5 1.5 0 0 1 .549-2.05L3 6.954V4.5A1.5 1.5 0 0 1 4.5 3h2.454l1.05-1.817zm9.703 9.024a1 1 0 0 0-1.414-1.414l-5.44 5.44a.5.5 0 0 1-.707 0l-2.439-2.44a1 1 0 0 0-1.414 1.414l2.44 2.44a2.5 2.5 0 0 0 3.535 0l5.44-5.44z"/>
+    </svg>
+  </template>
+
+  <script src="../shared/settings.js"></script>
+  <script src="options.js"></script>
+</body>
+</html>
