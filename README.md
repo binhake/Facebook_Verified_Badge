@@ -1,6 +1,6 @@
 <div align="center">
 
-<img src="icons/icon128.png" width="96" height="96" alt="Verified Badge for Facebook icon">
+<img src="docs/images/logo.png" width="96" height="96" alt="Verified Badge for Facebook icon">
 
 # Verified Badge for Facebook
 
