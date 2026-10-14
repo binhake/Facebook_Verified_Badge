@@ -69,7 +69,7 @@
       messages: {
         badgeTitle: 'Tài khoản đã xác minh',
         optionsTitle: 'Facebook Verified Badge',
-        optionsSubtitle: 'Huy hiệu trang trí, chỉ hiển thị trên trình duyệt của bạn.',
+        optionsSubtitle: 'Hiển thị huy hiệu đã xác minh bên cạnh tên Facebook của bạn',
         sectionGeneral: 'Chung',
         enabledLabel: 'Bật huy hiệu',
         enabledHint: 'Tắt để gỡ huy hiệu mà không cần gỡ extension.',
