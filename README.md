@@ -122,7 +122,7 @@ Click the extension icon in the toolbar (pin it from the puzzle-piece menu first
 | Option | Default | Description |
 |---|---|---|
 | Enable badge | On | Turn off to remove every badge without uninstalling the extension. |
-| Only on my own profile | Off | On: the badge appears only on the signed-in user's profile. Off: on every profile page you open. |
+| Only on my own profile | On | On: the badge appears only on the signed-in user's profile. Off: on every profile page you open. |
 | Debug logging | Off | Logs each step to the DevTools console with the `[FBVB]` prefix (see [Troubleshooting](#troubleshooting)). |
 | Profile badge size | `24` px | Range 8–64. |
 | Home badge size | `12` px | Range 8–48. |

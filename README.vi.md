@@ -122,7 +122,7 @@ Bấm icon extension trên thanh công cụ (ghim trước từ menu mảnh ghé
 | Tuỳ chọn | Mặc định | Ý nghĩa |
 |---|---|---|
 | Bật huy hiệu | Bật | Tắt để gỡ mọi huy hiệu mà không cần gỡ extension. |
-| Chỉ trên trang cá nhân của tôi | Tắt | Bật: chỉ gắn trên trang của tài khoản đang đăng nhập. Tắt: gắn trên mọi trang cá nhân bạn mở. |
+| Chỉ trên trang cá nhân của tôi | Bật | Bật: chỉ gắn trên trang của tài khoản đang đăng nhập. Tắt: gắn trên mọi trang cá nhân bạn mở. |
 | Ghi log gỡ lỗi | Tắt | In từng bước ra Console (DevTools) với tiền tố `[FBVB]` (xem [Xử lý sự cố](#xử-lý-sự-cố)). |
 | Cỡ huy hiệu trang cá nhân | `24` px | Trong khoảng 8–64. |
 | Cỡ huy hiệu trang chủ | `12` px | Trong khoảng 8–48. |

@@ -12,7 +12,7 @@
 
   const DEFAULT_SETTINGS = {
     enabled: true,
-    onlyOwnProfile: false,
+    onlyOwnProfile: true,
     debug: false,
     language: 'auto',
     intervalMs: 1000,
