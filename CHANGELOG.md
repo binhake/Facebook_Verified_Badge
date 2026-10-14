@@ -3,9 +3,16 @@
 All notable changes to this project are documented here.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project adheres to [Semantic Versioning](https://semver.org/).
 
-## [Unreleased]
+## [1.4.0] - 2026-10-15
+
+### Added
+- **Pages** section in the settings: separate switches for the home page and profile pages.
+- URL list: `www.facebook.com` and `web.facebook.com` are locked defaults; any other `facebook.com` URL can be added with `*` wildcards and a mode (Automatic, Profile, Home, Off), then edited or removed.
+- **Test a URL** field showing whether a badge will appear and which rule decided it.
 
 ### Changed
+- The content script is loaded on `*.facebook.com` and only acts on URLs in the list.
+- Page detection moved to `src/shared/settings.js` so the content script and the settings page share it.
 - "Only on my own profile" is now on by default.
 
 ## [1.3.0] - 2026-10-15

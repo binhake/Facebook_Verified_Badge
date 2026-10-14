@@ -27,6 +27,7 @@ Extension trình duyệt gọn nhẹ, hiển thị **huy hiệu tích xanh trang
 - [Cách hoạt động](#cách-hoạt-động)
 - [Cài đặt](#cài-đặt)
 - [Tuỳ chỉnh](#tuỳ-chỉnh)
+- [Danh sách URL](#danh-sách-url)
 - [Ngôn ngữ](#ngôn-ngữ)
 - [Xử lý sự cố](#xử-lý-sự-cố)
 - [Cấu trúc dự án](#cấu-trúc-dự-án)
@@ -48,7 +49,8 @@ Extension trình duyệt gọn nhẹ, hiển thị **huy hiệu tích xanh trang
 
 - **Giao diện tuỳ chỉnh.** Bấm icon extension trên thanh công cụ để bật/tắt huy hiệu, đổi kích thước, chu kỳ, bật log gỡ lỗi hay đổi ngôn ngữ — áp dụng ngay cho các tab Facebook đang mở.
 - **Thêm ngôn ngữ tuỳ ý.** Có sẵn tiếng Anh và tiếng Việt; tải file mẫu, dịch rồi import bất kỳ ngôn ngữ nào dưới dạng file `.json`.
-- **Ít quyền nhất có thể.** Chỉ xin `storage` (để nhớ tuỳ chọn) và một content script trên `www.facebook.com` / `web.facebook.com`; không background, không gửi request.
+- **Tuỳ chỉnh URL.** Có sẵn `www.facebook.com` và `web.facebook.com`; thêm URL bất kỳ thuộc `facebook.com` (hỗ trợ ký tự đại diện `*`) và chọn cách xử lý.
+- **Ít quyền nhất có thể.** Chỉ xin `storage` (để nhớ tuỳ chọn) và một content script trên `facebook.com`; không background, không gửi request.
 - **Giống hệt huy hiệu thật.** Markup chèn vào sao chép đúng cấu trúc huy hiệu của Facebook (cùng class, màu `--accent`), nên tự đổi theo giao diện sáng/tối.
 - **Ai cài cũng chạy.** Tên tài khoản đang đăng nhập được đọc từ dữ liệu Facebook nhúng sẵn trong trang, không cần sửa code.
 - **Hiểu SPA.** Facebook không tải lại trang khi chuyển trang; extension kiểm tra lại mỗi giây, gỡ huy hiệu cũ khi đổi URL và tự gắn lại nếu React vẽ lại phần tên.
@@ -127,10 +129,44 @@ Bấm icon extension trên thanh công cụ (ghim trước từ menu mảnh ghé
 | Cỡ huy hiệu trang cá nhân | `24` px | Trong khoảng 8–64. |
 | Cỡ huy hiệu trang chủ | `12` px | Trong khoảng 8–48. |
 | Chu kỳ kiểm tra | `1000` ms | Trong khoảng 250–10000. Nhỏ hơn = huy hiệu hiện nhanh hơn khi chuyển trang; lớn hơn = nhẹ máy hơn. |
+| Trang chủ | Bật | Huy hiệu ở trang chủ (`/`). |
+| Trang cá nhân | Bật | Huy hiệu ở `/username` và `/profile.php?id=…`. |
+| Danh sách URL | 2 URL mặc định | Nơi extension hoạt động — xem [Danh sách URL](#danh-sách-url). |
 | Ngôn ngữ hiển thị | Tự động | Ngôn ngữ của trang tuỳ chỉnh và tooltip huy hiệu. *Tự động* theo ngôn ngữ trình duyệt. |
-| Khôi phục mặc định | — | Đưa các tuỳ chọn trên về mặc định. Ngôn ngữ đã import được giữ lại. |
+| Khôi phục mặc định | — | Đưa các tuỳ chọn trên về mặc định và xoá URL bạn đã thêm. Ngôn ngữ đã import được giữ lại. |
 
 Tuỳ chọn được lưu bằng `chrome.storage.sync`, nên đi theo hồ sơ trình duyệt nếu bạn bật đồng bộ.
+
+## Danh sách URL
+
+Mục **Trang hoạt động → Danh sách URL** quyết định huy hiệu được phép xuất hiện ở đâu.
+
+| URL | Chế độ | |
+|---|---|---|
+| `www.facebook.com/*` | Tự động | 🔒 Mặc định — không sửa, không xoá, không thêm lại được |
+| `web.facebook.com/*` | Tự động | 🔒 Mặc định — không sửa, không xoá, không thêm lại được |
+| *URL của bạn* | Tự động / Trang cá nhân / Trang chủ / Tắt | Sửa và xoá được, tối đa 30 URL |
+
+**Thêm URL**
+
+- Nhập URL rồi bấm **Thêm**. Không cần gõ `https://`; nhập mỗi tên miền như `vi-vn.facebook.com` sẽ thành `vi-vn.facebook.com/*`.
+- Chỉ chấp nhận `facebook.com` và tên miền con của nó — `google.com` hay `facebook.com.example.net` đều bị từ chối.
+- `*` khớp mọi ký tự trong đường dẫn: `www.facebook.com/binhake/*` áp dụng cho `/binhake/about`, `/binhake/photos`, …
+- URL trùng (kể cả trùng 2 URL mặc định, viết hoa/thường khác nhau) đều bị từ chối.
+
+**Chế độ**
+
+| Chế độ | Cách hoạt động |
+|---|---|
+| Tự động | Tự nhận dạng loại trang: `/` → trang chủ, `/username` hoặc `/profile.php?id=…` → trang cá nhân, còn lại → không gắn. Tuân theo công tắc **Trang chủ** / **Trang cá nhân**. |
+| Trang cá nhân | Luôn tìm tên ở header trang cá nhân (vd `/binhake/about`). |
+| Trang chủ | Luôn tìm tên tài khoản đang đăng nhập ở cột trái. |
+| Tắt | Không bao giờ gắn huy hiệu ở các trang khớp (vd trang cá nhân của một người bạn). |
+
+URL của bạn được xét từ trên xuống **trước** URL mặc định, nên quy tắc cụ thể như `www.facebook.com/someone` → *Tắt* sẽ thắng `www.facebook.com/*`. Dùng ô **Thử một URL** để xem quy tắc nào được áp dụng và kết quả ra sao.
+
+> [!NOTE]
+> Có thể thêm các tên miền con khác (vd `m.facebook.com`, `mbasic.facebook.com`), nhưng giao diện của chúng khác bản desktop nên có thể không tìm được tên.
 
 ## Ngôn ngữ
 
@@ -167,13 +203,13 @@ Muốn bản dịch của bạn có sẵn trong extension? Mở pull request th�
 **Không thấy huy hiệu**
 
 1. Kiểm tra extension đang bật, **Bật huy hiệu** đang bật, và đã **Reload** extension sau khi sửa code.
-2. Đảm bảo URL là trang được hỗ trợ (xem [Hình minh hoạ](#hình-minh-hoạ)); `m.facebook.com` và các path như `/username/photos` không được hỗ trợ.
+2. Dán địa chỉ trang vào ô **Thử một URL** trong phần tuỳ chỉnh: nó cho biết trang đó có được gắn huy hiệu không và quy tắc nào quyết định. Thêm URL nếu cần (xem [Danh sách URL](#danh-sách-url)).
 3. Bật **Ghi log gỡ lỗi** trong phần tuỳ chỉnh, tải lại Facebook, mở DevTools (<kbd>F12</kbd>) → **Console** và lọc `FBVB`:
 
    | Log | Ý nghĩa |
    |---|---|
    | *(không có gì)* | Content script không chạy — kiểm tra extension đã bật chưa. |
-   | `Unsupported page: /…` | URL không phải trang chủ hay trang cá nhân. |
+   | `Skipped <url>: <reason> (<rule>)` | Trang này không gắn huy hiệu. Lý do: `noRule` (URL không có trong danh sách), `off` (bị quy tắc tắt), `typeOff` (công tắc Trang chủ/Trang cá nhân đang tắt), `unsupported` (không phải trang chủ hay trang cá nhân), `disabled` (huy hiệu đang tắt). |
    | `Signed-in user not found yet …` | Chưa đọc được dữ liệu tài khoản; trang chủ dùng cách dự phòng (span tên đầu tiên). |
    | `Profile: name not found …` | Không tìm thấy element phù hợp. Log liệt kê title, tên tài khoản và mọi `h1` — hãy gửi kèm khi tạo issue. |
    | `Badge (24px) added next to "…"` | Đã chạy đúng. |
@@ -247,7 +283,7 @@ Facebook_Verified_Badge/
 
 ## Quyền riêng tư
 
-- Quyền duy nhất là `storage`, dùng để lưu tuỳ chọn và ngôn ngữ đã import. Content script chỉ chạy trên `www.facebook.com` và `web.facebook.com`.
+- Quyền duy nhất là `storage`, dùng để lưu tuỳ chọn và ngôn ngữ đã import. Content script được nạp trên `*.facebook.com` và không làm gì nếu trang không khớp URL nào trong danh sách.
 - Tên và ID tài khoản được đọc từ trang hiện tại trong bộ nhớ, chỉ dùng để tìm vị trí tên trên màn hình, không lưu và không gửi đi.
 - Không analytics, không tải code từ xa, không có request mạng.
 
@@ -255,7 +291,7 @@ Facebook_Verified_Badge/
 
 - Phụ thuộc vào markup của Facebook (vd `span.x1lliihq`, thuộc tính `role`). Facebook đổi giao diện thường xuyên nên có thể cần cập nhật selector — hãy tạo issue kèm kết quả đoạn lệnh chẩn đoán.
 - Trên trang cá nhân **của người khác**, tên được tìm qua `<title>` hoặc tiêu đề trang; nếu Facebook để title là `Facebook` và tên không nằm trong `h1` thì sẽ không có huy hiệu.
-- Chưa hỗ trợ bản mobile (`m.facebook.com`), Messenger, Trang/Nhóm và các trang con như `/username/about`.
+- Chỉ hỗ trợ giao diện desktop. Bản mobile (`m.facebook.com`), Messenger, Trang/Nhóm thêm vào danh sách URL được nhưng thường sẽ không hiện huy hiệu.
 - Huy hiệu chỉ để trang trí: không xuất hiện trên thiết bị, trình duyệt khác hay với người khác.
 
 ## Đóng góp

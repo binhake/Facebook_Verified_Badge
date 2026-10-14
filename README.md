@@ -27,6 +27,7 @@ English · [Tiếng Việt](README.vi.md)
 - [How it works](#how-it-works)
 - [Installation](#installation)
 - [Settings](#settings)
+- [URLs](#urls)
 - [Languages](#languages)
 - [Troubleshooting](#troubleshooting)
 - [Project structure](#project-structure)
@@ -48,7 +49,8 @@ English · [Tiếng Việt](README.vi.md)
 
 - **Settings UI.** Click the toolbar icon to toggle the badge, change sizes and timing, enable debug logs or switch language — changes apply to open Facebook tabs instantly.
 - **Custom languages.** Ships with English and Vietnamese; download a template, translate it and import any other language as a `.json` file.
-- **Minimal permissions.** Only `storage` (to remember your settings) and a content script on `www.facebook.com` / `web.facebook.com`; no background worker, no network requests.
+- **Custom URLs.** `www.facebook.com` and `web.facebook.com` are built in; add any other URL on `facebook.com` (with `*` wildcards) and choose how it is handled.
+- **Minimal permissions.** Only `storage` (to remember your settings) and a content script on `facebook.com`; no background worker, no network requests.
 - **Native look.** The injected markup mirrors Facebook's own badge (same classes, `--accent` colour), so it follows light/dark mode automatically.
 - **Works for anyone who installs it.** The signed-in user's name is read from the data Facebook embeds in the page, so nothing is hard-coded.
 - **SPA aware.** Facebook never reloads the page when you navigate; the extension re-checks every second, removes stale badges on URL change and re-adds the badge if React re-renders the name.
@@ -127,10 +129,44 @@ Click the extension icon in the toolbar (pin it from the puzzle-piece menu first
 | Profile badge size | `24` px | Range 8–64. |
 | Home badge size | `12` px | Range 8–48. |
 | Re-check interval | `1000` ms | Range 250–10000. Lower = the badge appears faster after navigation; higher = less work. |
+| Home page | On | Badge on the home feed (`/`). |
+| Profile pages | On | Badge on `/username` and `/profile.php?id=…`. |
+| URLs | 2 defaults | Where the extension runs — see [URLs](#urls). |
 | Display language | Automatic | Language of the settings page and the badge tooltip. *Automatic* follows the browser language. |
-| Reset to defaults | — | Restores the options above. Imported languages are kept. |
+| Reset to defaults | — | Restores the options above and removes your custom URLs. Imported languages are kept. |
 
 Settings are stored with `chrome.storage.sync`, so they follow your browser profile if sync is enabled.
+
+## URLs
+
+The **Pages → URLs** list decides where the badge may appear.
+
+| URL | Mode | |
+|---|---|---|
+| `www.facebook.com/*` | Automatic | 🔒 Default — cannot be edited, removed or added again |
+| `web.facebook.com/*` | Automatic | 🔒 Default — cannot be edited, removed or added again |
+| *your URLs* | Automatic / Profile / Home / Off | Editable and removable, up to 30 |
+
+**Adding a URL**
+
+- Type a URL and click **Add**. `https://` is optional; a bare host such as `vi-vn.facebook.com` becomes `vi-vn.facebook.com/*`.
+- Only `facebook.com` and its subdomains are accepted — `google.com` or `facebook.com.example.net` are rejected.
+- `*` matches any characters in the path: `www.facebook.com/binhake/*` covers `/binhake/about`, `/binhake/photos`, …
+- Duplicates (including the two defaults, in any spelling) are rejected.
+
+**Modes**
+
+| Mode | Behaviour |
+|---|---|
+| Automatic | Detects the page type: `/` → home, `/username` or `/profile.php?id=…` → profile, anything else → no badge. Respects the **Home page** / **Profile pages** switches. |
+| Profile | Always looks for the name in the profile header (e.g. `/binhake/about`). |
+| Home | Always looks for the signed-in user's name in the left sidebar. |
+| Off | Never shows a badge on matching pages (e.g. a friend's profile). |
+
+Your URLs are checked top to bottom **before** the defaults, so a specific rule like `www.facebook.com/someone` → *Off* wins over `www.facebook.com/*`. Use **Test a URL** to see which rule applies and what will happen.
+
+> [!NOTE]
+> Other subdomains (e.g. `m.facebook.com`, `mbasic.facebook.com`) can be added, but their markup differs from the desktop site, so the name may not be found there.
 
 ## Languages
 
@@ -167,13 +203,13 @@ Want your translation shipped with the extension? Open a pull request adding it 
 **The badge does not appear**
 
 1. Confirm the extension is enabled, **Enable badge** is on, and the extension was reloaded after any code change.
-2. Make sure the URL is a supported page (see [Preview](#preview)); `m.facebook.com` and paths like `/username/photos` are not supported.
+2. Paste the page address into **Test a URL** in the settings: it tells you whether a badge is expected and which rule decided it. Add a URL rule if needed (see [URLs](#urls)).
 3. Turn on **Debug logging** in the settings, refresh Facebook, open DevTools (<kbd>F12</kbd>) → **Console** and filter by `FBVB`:
 
    | Log | Meaning |
    |---|---|
    | *(nothing)* | The content script is not running — check that the extension is enabled. |
-   | `Unsupported page: /…` | The URL is not a home or profile page. |
+   | `Skipped <url>: <reason> (<rule>)` | No badge on this page. Reasons: `noRule` (URL not in the list), `off` (disabled by a rule), `typeOff` (Home/Profile switch is off), `unsupported` (not a home or profile page), `disabled` (badge turned off). |
    | `Signed-in user not found yet …` | Facebook's embedded user data could not be read; the home page falls back to the first name span. |
    | `Profile: name not found …` | No matching element. The log lists the title, the viewer name and all `h1`s — please include it in an issue. |
    | `Badge (24px) added next to "…"` | Working as intended. |
@@ -247,7 +283,7 @@ Facebook_Verified_Badge/
 
 ## Privacy
 
-- The only permission is `storage`, used for your settings and imported languages. The content script runs only on `www.facebook.com` and `web.facebook.com`.
+- The only permission is `storage`, used for your settings and imported languages. The content script is loaded on `*.facebook.com` and does nothing unless the page matches a URL in your list.
 - The signed-in user's name and ID are read from the current page in memory, used only to locate the name on screen, and never stored or transmitted.
 - No analytics, no remote code, no network requests.
 
@@ -255,7 +291,7 @@ Facebook_Verified_Badge/
 
 - Relies on Facebook's markup (e.g. `span.x1lliihq`, `role` attributes). Facebook changes its front end frequently, so a future update may require new selectors — please open an issue with the diagnostic output.
 - On **other people's** profiles the name is found through `<title>` or the page heading; if Facebook leaves the title as `Facebook` and the name is not in an `h1`, no badge is shown there.
-- The mobile site (`m.facebook.com`), Messenger, Pages/Groups and sub-pages like `/username/about` are not supported.
+- Only the desktop markup is supported. The mobile site (`m.facebook.com`), Messenger and Pages/Groups can be added as URLs but will usually not show a badge.
 - The badge is cosmetic: it does not appear on other devices, in other browsers, or for other people.
 
 ## Contributing

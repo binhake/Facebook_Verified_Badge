@@ -45,6 +45,40 @@
     </section>
 
     <section class="card">
+      <h2 data-i18n="sectionPages"></h2>
+
+      <label class="row">
+        <span class="row-text">
+          <span class="row-label" data-i18n="homeEnabledLabel"></span>
+          <span class="row-hint" data-i18n="homeEnabledHint"></span>
+        </span>
+        <input class="switch" type="checkbox" data-setting="homeEnabled">
+      </label>
+
+      <label class="row">
+        <span class="row-text">
+          <span class="row-label" data-i18n="profileEnabledLabel"></span>
+          <span class="row-hint" data-i18n="profileEnabledHint"></span>
+        </span>
+        <input class="switch" type="checkbox" data-setting="profileEnabled">
+      </label>
+
+      <div class="subheading" data-i18n="urlRulesLabel"></div>
+      <ul class="rule-list" id="ruleList"></ul>
+
+      <form class="rule-add" id="ruleForm">
+        <input class="text rule-pattern" id="ruleInput" type="text" autocomplete="off" spellcheck="false" data-i18n-placeholder="rulePlaceholder">
+        <select class="select rule-mode" id="ruleModeInput"></select>
+        <button class="button button-primary" type="submit" data-i18n="addRule"></button>
+      </form>
+      <p class="row-hint" data-i18n="urlRulesHint"></p>
+
+      <div class="subheading" data-i18n="testUrlLabel"></div>
+      <input class="text" id="testInput" type="text" autocomplete="off" spellcheck="false" data-i18n-placeholder="testUrlPlaceholder">
+      <p class="test-result" id="testResult"></p>
+    </section>
+
+    <section class="card">
       <h2 data-i18n="sectionAppearance"></h2>
 
       <div class="preview" id="badgePreview">
@@ -104,6 +138,25 @@
       <span class="language-name"></span>
       <code class="language-code"></code>
       <button class="button button-ghost button-small language-remove" type="button"></button>
+    </li>
+  </template>
+
+  <template id="tplRuleLocked">
+    <li class="rule-item is-locked">
+      <svg class="rule-lock" viewBox="0 0 16 16" width="14" height="14" fill="currentColor" aria-hidden="true">
+        <path d="M8 1a3.5 3.5 0 0 0-3.5 3.5V6H4a1.5 1.5 0 0 0-1.5 1.5v6A1.5 1.5 0 0 0 4 15h8a1.5 1.5 0 0 0 1.5-1.5v-6A1.5 1.5 0 0 0 12 6h-.5V4.5A3.5 3.5 0 0 0 8 1zm2 5H6V4.5a2 2 0 1 1 4 0V6z"/>
+      </svg>
+      <span class="rule-text"></span>
+      <span class="rule-tag"></span>
+      <span class="rule-mode-text"></span>
+    </li>
+  </template>
+
+  <template id="tplRuleItem">
+    <li class="rule-item">
+      <input class="text rule-pattern" type="text" autocomplete="off" spellcheck="false">
+      <select class="select rule-mode"></select>
+      <button class="button button-ghost button-small rule-remove" type="button"></button>
     </li>
   </template>
 

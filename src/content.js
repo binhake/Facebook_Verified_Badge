@@ -26,13 +26,6 @@
 
   const BADGE_PATH = 'M8.004 1.183a1.5 1.5 0 0 1 2.049-.55L12 1.759 13.947.634a1.5 1.5 0 0 1 2.05.549L17.045 3H19.5A1.5 1.5 0 0 1 21 4.5v2.453l1.817 1.05a1.5 1.5 0 0 1 .55 2.049L22.241 12l1.124 1.947a1.5 1.5 0 0 1-.55 2.05L21 17.044V19.5a1.5 1.5 0 0 1-1.5 1.5h-2.454l-1.05 1.817a1.5 1.5 0 0 1-2.048.549L12 22.241l-1.948 1.125a1.5 1.5 0 0 1-2.049-.549L6.955 21H4.5A1.5 1.5 0 0 1 3 19.5v-2.455l-1.817-1.049a1.5 1.5 0 0 1-.549-2.049L1.758 12 .634 10.053a1.5 1.5 0 0 1 .549-2.05L3 6.954V4.5A1.5 1.5 0 0 1 4.5 3h2.454l1.05-1.817zm9.703 9.024a1 1 0 0 0-1.414-1.414l-5.44 5.44a.5.5 0 0 1-.707 0l-2.439-2.44a1 1 0 0 0-1.414 1.414l2.44 2.44a2.5 2.5 0 0 0 3.535 0l5.44-5.44z';
 
-  const RESERVED_PATHS = new Set([
-    'home.php', 'groups', 'watch', 'marketplace', 'gaming', 'events', 'pages', 'friends',
-    'messages', 'notifications', 'bookmarks', 'saved', 'reel', 'reels', 'stories', 'search',
-    'settings', 'login', 'hashtag', 'memories', 'fundraisers', 'videos', 'live', 'photos',
-    'privacy', 'policies', 'help', 'business', 'feeds', 'news', 'onthisday', 'games'
-  ]);
-  const USERNAME_RE = /^[A-Za-z0-9.]{5,50}$/;
   const VIEWER_NAME_RE = /"CurrentUserInitialData",\[\],\{[^{}]*?"NAME":"((?:[^"\\]|\\.)*)"/;
   const VIEWER_ID_RE = /"CurrentUserInitialData",\[\],\{[^{}]*?"USER_ID":"(\d+)"/;
 
@@ -122,30 +115,6 @@
   }
 
   // ===== Page detection =====
-
-  function detectMode() {
-    const path = location.pathname.replace(/\/+$/, '');
-
-    if (path === '' || path === '/home.php') {
-      return 'home';
-    }
-
-    if (path === '/profile.php') {
-      return new URLSearchParams(location.search).get('id') ? 'profile' : null;
-    }
-
-    const segments = path.split('/').filter(Boolean);
-    if (segments.length !== 1) {
-      return null;
-    }
-
-    const username = segments[0];
-    if (!USERNAME_RE.test(username) || RESERVED_PATHS.has(username.toLowerCase())) {
-      return null;
-    }
-
-    return 'profile';
-  }
 
   // "(3) Jane Doe | Facebook" -> "Jane Doe"
   function getNameFromTitle() {
@@ -370,13 +339,11 @@
         resetPatches();
       }
 
-      if (!appState.settings.enabled) {
-        return;
-      }
-
-      const mode = detectMode();
+      const page = FBVB.resolvePageMode(location, appState.settings);
+      const mode = page.mode;
       if (!mode) {
-        log('Unsupported page: ' + location.pathname);
+        log('Skipped ' + location.hostname + location.pathname + ': ' + page.reason
+          + (page.rule ? ' (' + page.rule.pattern + ')' : ''));
         return;
       }
       if (isAlreadyPatched()) {

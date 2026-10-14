@@ -10,6 +10,26 @@
   const FALLBACK_LANGUAGE = 'en';
   const LANGUAGE_CODE_RE = /^[a-z]{2,3}(-[A-Za-z0-9]{2,8})?$/;
 
+  const ROOT_DOMAIN = 'facebook.com';
+  const RULE_MODES = ['auto', 'profile', 'home', 'off'];
+  const MAX_URL_RULES = 30;
+  const MAX_PATTERN_LENGTH = 200;
+
+  // Always active, cannot be edited, removed or added again
+  const DEFAULT_URL_RULES = Object.freeze([
+    Object.freeze({ pattern: 'www.facebook.com/*', mode: 'auto', locked: true }),
+    Object.freeze({ pattern: 'web.facebook.com/*', mode: 'auto', locked: true })
+  ]);
+
+  // Single path segment that is not a profile
+  const RESERVED_PATHS = new Set([
+    'home.php', 'groups', 'watch', 'marketplace', 'gaming', 'events', 'pages', 'friends',
+    'messages', 'notifications', 'bookmarks', 'saved', 'reel', 'reels', 'stories', 'search',
+    'settings', 'login', 'hashtag', 'memories', 'fundraisers', 'videos', 'live', 'photos',
+    'privacy', 'policies', 'help', 'business', 'feeds', 'news', 'onthisday', 'games'
+  ]);
+  const USERNAME_RE = /^[A-Za-z0-9.]{5,50}$/;
+
   const DEFAULT_SETTINGS = {
     enabled: true,
     onlyOwnProfile: true,
@@ -17,7 +37,10 @@
     language: 'auto',
     intervalMs: 1000,
     badgeSizeHome: 12,
-    badgeSizeProfile: 24
+    badgeSizeProfile: 24,
+    homeEnabled: true,
+    profileEnabled: true,
+    urlRules: []
   };
 
   const LIMITS = {
@@ -58,6 +81,39 @@
         importSuccess: 'Imported language: {name}',
         importError: 'Invalid language file: {reason}',
         removeConfirm: 'Remove language "{name}"?',
+        sectionPages: 'Pages',
+        homeEnabledLabel: 'Home page',
+        homeEnabledHint: 'Badge next to your name in the left sidebar.',
+        profileEnabledLabel: 'Profile pages',
+        profileEnabledHint: 'facebook.com/username and profile.php?id=…',
+        urlRulesLabel: 'URLs',
+        urlRulesHint: 'Add any URL on facebook.com. Use * as a wildcard in the path, e.g. www.facebook.com/username/*. Your URLs are checked before the defaults.',
+        rulePlaceholder: 'www.facebook.com/username/*',
+        ruleDefaultTag: 'Default',
+        ruleModeAuto: 'Automatic',
+        ruleModeProfile: 'Profile',
+        ruleModeHome: 'Home',
+        ruleModeOff: 'Off',
+        addRule: 'Add',
+        ruleAdded: 'Added {pattern}',
+        ruleErrorEmpty: 'Enter a URL.',
+        ruleErrorInvalid: 'Not a valid URL.',
+        ruleErrorDomain: 'Only URLs on facebook.com are allowed.',
+        ruleErrorDuplicate: '{pattern} is already in the list.',
+        ruleErrorLimit: 'You can add up to {max} URLs.',
+        testUrlLabel: 'Test a URL',
+        testUrlPlaceholder: 'https://www.facebook.com/username',
+        testModeHome: 'Badge in the home sidebar',
+        testModeProfile: 'Badge in the profile header',
+        testModeNone: 'No badge',
+        testReasonBuiltin: 'automatic detection via {pattern}',
+        testReasonRule: 'forced by {pattern}',
+        testReasonOff: 'disabled by {pattern}',
+        testReasonTypeOff: 'this page type is turned off',
+        testReasonUnsupported: 'not a home or profile page',
+        testReasonNoRule: 'URL is not in the list',
+        testReasonDisabled: 'the badge is turned off',
+        testReasonInvalid: 'not a valid URL',
         resetDefaults: 'Reset to defaults',
         resetConfirm: 'Reset all settings to their defaults?',
         saved: 'Saved',
@@ -95,6 +151,39 @@
         importSuccess: 'Đã import ngôn ngữ: {name}',
         importError: 'File ngôn ngữ không hợp lệ: {reason}',
         removeConfirm: 'Xoá ngôn ngữ "{name}"?',
+        sectionPages: 'Trang hoạt động',
+        homeEnabledLabel: 'Trang chủ',
+        homeEnabledHint: 'Huy hiệu cạnh tên bạn ở cột trái.',
+        profileEnabledLabel: 'Trang cá nhân',
+        profileEnabledHint: 'facebook.com/username và profile.php?id=…',
+        urlRulesLabel: 'Danh sách URL',
+        urlRulesHint: 'Thêm URL bất kỳ thuộc facebook.com. Dùng * làm ký tự đại diện trong đường dẫn, vd www.facebook.com/username/*. URL của bạn được xét trước URL mặc định.',
+        rulePlaceholder: 'www.facebook.com/username/*',
+        ruleDefaultTag: 'Mặc định',
+        ruleModeAuto: 'Tự động',
+        ruleModeProfile: 'Trang cá nhân',
+        ruleModeHome: 'Trang chủ',
+        ruleModeOff: 'Tắt',
+        addRule: 'Thêm',
+        ruleAdded: 'Đã thêm {pattern}',
+        ruleErrorEmpty: 'Hãy nhập URL.',
+        ruleErrorInvalid: 'URL không hợp lệ.',
+        ruleErrorDomain: 'Chỉ chấp nhận URL thuộc facebook.com.',
+        ruleErrorDuplicate: '{pattern} đã có trong danh sách.',
+        ruleErrorLimit: 'Chỉ thêm được tối đa {max} URL.',
+        testUrlLabel: 'Thử một URL',
+        testUrlPlaceholder: 'https://www.facebook.com/username',
+        testModeHome: 'Gắn huy hiệu ở cột trái trang chủ',
+        testModeProfile: 'Gắn huy hiệu ở header trang cá nhân',
+        testModeNone: 'Không gắn huy hiệu',
+        testReasonBuiltin: 'nhận dạng tự động qua {pattern}',
+        testReasonRule: 'bắt buộc bởi {pattern}',
+        testReasonOff: 'bị tắt bởi {pattern}',
+        testReasonTypeOff: 'loại trang này đang tắt',
+        testReasonUnsupported: 'không phải trang chủ hay trang cá nhân',
+        testReasonNoRule: 'URL không có trong danh sách',
+        testReasonDisabled: 'huy hiệu đang tắt',
+        testReasonInvalid: 'URL không hợp lệ',
         resetDefaults: 'Khôi phục mặc định',
         resetConfirm: 'Đưa mọi tuỳ chọn về mặc định?',
         saved: 'Đã lưu',
@@ -126,7 +215,10 @@
     settings.enabled = Boolean(settings.enabled);
     settings.onlyOwnProfile = Boolean(settings.onlyOwnProfile);
     settings.debug = Boolean(settings.debug);
+    settings.homeEnabled = Boolean(settings.homeEnabled);
+    settings.profileEnabled = Boolean(settings.profileEnabled);
     settings.language = typeof settings.language === 'string' ? settings.language : 'auto';
+    settings.urlRules = normalizeUrlRules(settings.urlRules);
     return settings;
   }
 
@@ -246,10 +338,170 @@
     };
   }
 
+  // ===== URL rules =====
+
+  function createRuleError(code, params) {
+    const err = new Error(code);
+    err.code = code;
+    err.params = params || {};
+    return err;
+  }
+
+  function isFacebookHost(host) {
+    return host === ROOT_DOMAIN || host.endsWith('.' + ROOT_DOMAIN);
+  }
+
+  function parseUrl(input) {
+    let text = String(input || '').trim();
+    if (!/^[a-z][a-z0-9+.-]*:\/\//i.test(text)) {
+      text = 'https://' + text;
+    }
+    const url = new URL(text);
+    if (url.protocol !== 'https:' && url.protocol !== 'http:') {
+      throw new TypeError('Unsupported protocol');
+    }
+    return url;
+  }
+
+  // "https://WWW.facebook.com/binhake/" -> "www.facebook.com/binhake", bare host -> "host/*"
+  function normalizeUrlPattern(input) {
+    if (!String(input || '').trim()) {
+      throw createRuleError('ruleErrorEmpty');
+    }
+
+    let url;
+    try {
+      url = parseUrl(input);
+    } catch (err) {
+      throw createRuleError('ruleErrorInvalid');
+    }
+
+    const host = url.hostname.toLowerCase();
+    if (!isFacebookHost(host)) {
+      throw createRuleError('ruleErrorDomain');
+    }
+
+    const path = url.pathname.replace(/\/+$/, '') || '/*';
+    const pattern = host + path;
+    if (pattern.length > MAX_PATTERN_LENGTH) {
+      throw createRuleError('ruleErrorInvalid');
+    }
+    return pattern;
+  }
+
+  // Validates a pattern against the defaults and the other user rules (skipIndex = the rule being edited)
+  function validateUrlRule(input, rules, skipIndex) {
+    const pattern = normalizeUrlPattern(input);
+    const taken = DEFAULT_URL_RULES.concat(rules).some(function (rule, index) {
+      const ruleIndex = index - DEFAULT_URL_RULES.length;
+      return ruleIndex !== skipIndex && rule.pattern === pattern;
+    });
+
+    if (taken) {
+      throw createRuleError('ruleErrorDuplicate', { pattern: pattern });
+    }
+    if (skipIndex === undefined && rules.length >= MAX_URL_RULES) {
+      throw createRuleError('ruleErrorLimit', { max: MAX_URL_RULES });
+    }
+    return pattern;
+  }
+
+  function normalizeUrlRules(raw) {
+    const rules = [];
+    for (const item of Array.isArray(raw) ? raw : []) {
+      if (!item || rules.length >= MAX_URL_RULES) {
+        continue;
+      }
+      try {
+        rules.push({
+          pattern: validateUrlRule(item.pattern, rules, -1),
+          mode: RULE_MODES.indexOf(item.mode) === -1 ? 'auto' : item.mode
+        });
+      } catch (err) {
+        // Invalid or duplicate rules from older data are dropped silently
+      }
+    }
+    return rules;
+  }
+
+  function patternToRegExp(pathPattern) {
+    const source = pathPattern
+      .split('*')
+      .map(function (part) {
+        return part.replace(/[.+?^${}()|[\]\\]/g, '\\$&');
+      })
+      .join('.*');
+    return new RegExp('^' + source + '$', 'i');
+  }
+
+  function matchUrlRule(rule, url) {
+    const slash = rule.pattern.indexOf('/');
+    const host = rule.pattern.slice(0, slash);
+    const path = url.pathname.replace(/\/+$/, '') || '/';
+    return url.hostname.toLowerCase() === host && patternToRegExp(rule.pattern.slice(slash)).test(path);
+  }
+
+  function detectBuiltinMode(url) {
+    const path = url.pathname.replace(/\/+$/, '');
+
+    if (path === '' || path === '/home.php') {
+      return 'home';
+    }
+
+    if (path === '/profile.php') {
+      return new URLSearchParams(url.search).get('id') ? 'profile' : null;
+    }
+
+    const segments = path.split('/').filter(Boolean);
+    if (segments.length !== 1) {
+      return null;
+    }
+
+    const username = segments[0];
+    if (!USERNAME_RE.test(username) || RESERVED_PATHS.has(username.toLowerCase())) {
+      return null;
+    }
+    return 'profile';
+  }
+
+  // User rules first (top to bottom), then the locked defaults.
+  // Returns { mode: 'home' | 'profile' | null, reason, rule }
+  function resolvePageMode(url, settings) {
+    if (!settings.enabled) {
+      return { mode: null, reason: 'disabled', rule: null };
+    }
+
+    const rules = settings.urlRules.concat(DEFAULT_URL_RULES);
+    for (const rule of rules) {
+      if (!matchUrlRule(rule, url)) {
+        continue;
+      }
+      if (rule.mode === 'off') {
+        return { mode: null, reason: 'off', rule: rule };
+      }
+      if (rule.mode !== 'auto') {
+        return { mode: rule.mode, reason: 'rule', rule: rule };
+      }
+
+      const mode = detectBuiltinMode(url);
+      if (!mode) {
+        return { mode: null, reason: 'unsupported', rule: rule };
+      }
+      if ((mode === 'home' && !settings.homeEnabled) || (mode === 'profile' && !settings.profileEnabled)) {
+        return { mode: null, reason: 'typeOff', rule: rule };
+      }
+      return { mode: mode, reason: 'builtin', rule: rule };
+    }
+
+    return { mode: null, reason: 'noRule', rule: null };
+  }
+
   root.FBVB = {
     SETTINGS_KEY: SETTINGS_KEY,
     LANGUAGES_KEY: LANGUAGES_KEY,
     DEFAULT_SETTINGS: DEFAULT_SETTINGS,
+    DEFAULT_URL_RULES: DEFAULT_URL_RULES,
+    RULE_MODES: RULE_MODES,
     LIMITS: LIMITS,
     BUILTIN_LANGUAGES: BUILTIN_LANGUAGES,
     normalizeSettings: normalizeSettings,
@@ -260,6 +512,9 @@
     getAllLanguages: getAllLanguages,
     createTranslator: createTranslator,
     parseLanguageFile: parseLanguageFile,
-    createLanguageTemplate: createLanguageTemplate
+    createLanguageTemplate: createLanguageTemplate,
+    parseUrl: parseUrl,
+    validateUrlRule: validateUrlRule,
+    resolvePageMode: resolvePageMode
   };
 })(globalThis);

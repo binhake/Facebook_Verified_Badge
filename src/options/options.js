@@ -23,6 +23,13 @@
   function cacheDom() {
     dom.settingInputs = Array.from(document.querySelectorAll('[data-setting]'));
     dom.i18nNodes = Array.from(document.querySelectorAll('[data-i18n]'));
+    dom.placeholderNodes = Array.from(document.querySelectorAll('[data-i18n-placeholder]'));
+    dom.ruleList = document.getElementById('ruleList');
+    dom.ruleForm = document.getElementById('ruleForm');
+    dom.ruleInput = document.getElementById('ruleInput');
+    dom.ruleModeInput = document.getElementById('ruleModeInput');
+    dom.testInput = document.getElementById('testInput');
+    dom.testResult = document.getElementById('testResult');
     dom.previewBadges = Array.from(document.querySelectorAll('[data-preview]'));
     dom.languageSelect = document.getElementById('languageSelect');
     dom.languageList = document.getElementById('languageList');
@@ -60,6 +67,9 @@
     document.title = t('optionsTitle');
     dom.i18nNodes.forEach(function (node) {
       node.textContent = t(node.dataset.i18n);
+    });
+    dom.placeholderNodes.forEach(function (node) {
+      node.placeholder = t(node.dataset.i18nPlaceholder);
     });
   }
 
@@ -133,6 +143,71 @@
     dom.languageEmpty.hidden = codes.length > 0;
   }
 
+  function getModeLabel(mode) {
+    return appState.translate('ruleMode' + mode.charAt(0).toUpperCase() + mode.slice(1));
+  }
+
+  function fillModeSelect(select, value) {
+    select.replaceChildren();
+    FBVB.RULE_MODES.forEach(function (mode) {
+      select.append(createOption(mode, getModeLabel(mode)));
+    });
+    select.value = value;
+  }
+
+  function renderRuleList() {
+    const t = appState.translate;
+    dom.ruleList.replaceChildren();
+
+    FBVB.DEFAULT_URL_RULES.forEach(function (rule) {
+      const item = cloneTemplate('tplRuleLocked');
+      item.querySelector('.rule-text').textContent = rule.pattern;
+      item.querySelector('.rule-tag').textContent = t('ruleDefaultTag');
+      item.querySelector('.rule-mode-text').textContent = getModeLabel(rule.mode);
+      dom.ruleList.append(item);
+    });
+
+    appState.settings.urlRules.forEach(function (rule, index) {
+      const item = cloneTemplate('tplRuleItem');
+      const pattern = item.querySelector('.rule-pattern');
+      const remove = item.querySelector('.rule-remove');
+      item.dataset.index = index;
+      pattern.value = rule.pattern;
+      fillModeSelect(item.querySelector('.rule-mode'), rule.mode);
+      remove.textContent = t('removeLanguage');
+      dom.ruleList.append(item);
+    });
+
+    fillModeSelect(dom.ruleModeInput, dom.ruleModeInput.value || 'auto');
+  }
+
+  function renderTestResult() {
+    const t = appState.translate;
+    const input = dom.testInput.value.trim();
+
+    if (!input) {
+      dom.testResult.textContent = '';
+      dom.testResult.classList.remove('is-active');
+      return;
+    }
+
+    let page;
+    try {
+      page = FBVB.resolvePageMode(FBVB.parseUrl(input), appState.settings);
+    } catch (err) {
+      page = { mode: null, reason: 'invalid', rule: null };
+    }
+
+    const modeText = page.mode === 'home' ? t('testModeHome')
+      : page.mode === 'profile' ? t('testModeProfile')
+        : t('testModeNone');
+    const reasonKey = 'testReason' + page.reason.charAt(0).toUpperCase() + page.reason.slice(1);
+    const reasonText = t(reasonKey, { pattern: page.rule ? page.rule.pattern : '' });
+
+    dom.testResult.textContent = modeText + ' — ' + reasonText;
+    dom.testResult.classList.toggle('is-active', Boolean(page.mode));
+  }
+
   function renderPreview() {
     dom.previewBadges.forEach(function (holder) {
       const size = appState.settings[holder.dataset.preview];
@@ -148,6 +223,8 @@
     renderControls();
     renderLanguageSelect();
     renderLanguageList();
+    renderRuleList();
+    renderTestResult();
     renderPreview();
   }
 
@@ -161,9 +238,62 @@
       render();
     } else {
       renderControls();
+      renderTestResult();
       renderPreview();
     }
     showToast(appState.translate('saved'));
+  }
+
+  async function saveRules(rules, message) {
+    appState.settings = await FBVB.saveSettings(Object.assign({}, appState.settings, { urlRules: rules }));
+    renderRuleList();
+    renderTestResult();
+    showToast(message || appState.translate('saved'));
+  }
+
+  function showRuleError(err) {
+    showToast(appState.translate(err.code || 'ruleErrorInvalid', err.params), true);
+  }
+
+  function addRule() {
+    const rules = appState.settings.urlRules.slice();
+    let pattern;
+    try {
+      pattern = FBVB.validateUrlRule(dom.ruleInput.value, rules);
+    } catch (err) {
+      showRuleError(err);
+      return;
+    }
+
+    rules.push({ pattern: pattern, mode: dom.ruleModeInput.value });
+    dom.ruleInput.value = '';
+    saveRules(rules, appState.translate('ruleAdded', { pattern: pattern }));
+  }
+
+  function editRule(index, field, input) {
+    const rules = appState.settings.urlRules.slice();
+    const rule = Object.assign({}, rules[index]);
+
+    if (field === 'pattern') {
+      try {
+        rule.pattern = FBVB.validateUrlRule(input.value, rules, index);
+      } catch (err) {
+        input.value = rules[index].pattern;
+        showRuleError(err);
+        return;
+      }
+    } else {
+      rule.mode = input.value;
+    }
+
+    rules[index] = rule;
+    saveRules(rules);
+  }
+
+  function removeRule(index) {
+    const rules = appState.settings.urlRules.slice();
+    rules.splice(index, 1);
+    saveRules(rules);
   }
 
   function readInputValue(input) {
@@ -263,6 +393,28 @@
       }
     });
 
+    dom.ruleForm.addEventListener('submit', function (event) {
+      event.preventDefault();
+      addRule();
+    });
+
+    dom.ruleList.addEventListener('change', function (event) {
+      const item = event.target.closest('.rule-item[data-index]');
+      if (!item) {
+        return;
+      }
+      const field = event.target.classList.contains('rule-pattern') ? 'pattern' : 'mode';
+      editRule(Number(item.dataset.index), field, event.target);
+    });
+
+    dom.ruleList.addEventListener('click', function (event) {
+      const button = event.target.closest('.rule-remove');
+      if (button) {
+        removeRule(Number(button.closest('.rule-item').dataset.index));
+      }
+    });
+
+    dom.testInput.addEventListener('input', renderTestResult);
     dom.templateButton.addEventListener('click', downloadTemplate);
     dom.resetButton.addEventListener('click', resetDefaults);
   }
