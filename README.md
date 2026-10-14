@@ -1,8 +1,10 @@
 <div align="center">
 
-<img src="icons/icon128.png" width="96" height="96" alt="Facebook Verified Badge icon">
+<img src="icons/icon128.png" width="96" height="96" alt="Verified Badge for Facebook icon">
 
-# Facebook Verified Badge
+# Verified Badge for Facebook
+
+<sub>Repository: Facebook_Verified_Badge</sub>
 
 A lightweight browser extension that shows a **cosmetic verified badge** next to your name on Facebook — on the home feed and on profile pages.
 
@@ -276,6 +278,7 @@ Facebook_Verified_Badge/
 ├── icons/                 # 16 / 48 / 128 px extension icons
 ├── docs/images/           # README illustrations
 ├── CHANGELOG.md
+├── PRIVACY.md
 ├── LICENSE
 ├── README.md
 └── README.vi.md
@@ -286,6 +289,7 @@ Facebook_Verified_Badge/
 - The only permission is `storage`, used for your settings and imported languages. The content script is loaded on `*.facebook.com` and does nothing unless the page matches a URL in your list.
 - The signed-in user's name and ID are read from the current page in memory, used only to locate the name on screen, and never stored or transmitted.
 - No analytics, no remote code, no network requests.
+- Full policy: [PRIVACY.md](PRIVACY.md).
 
 ## Limitations
 

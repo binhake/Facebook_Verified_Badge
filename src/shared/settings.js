@@ -1,5 +1,5 @@
 /*!
- * Facebook Verified Badge — shared settings & i18n
+ * Verified Badge for Facebook — shared settings & i18n
  * Loaded by both the content script and the options page; exposes globalThis.FBVB.
  */
 (function (root) {
@@ -54,7 +54,7 @@
       name: 'English',
       messages: {
         badgeTitle: 'Verified account',
-        optionsTitle: 'Facebook Verified Badge',
+        optionsTitle: 'Verified Badge for Facebook',
         optionsSubtitle: 'Cosmetic badge, visible only in your browser.',
         sectionGeneral: 'General',
         enabledLabel: 'Enable badge',
@@ -124,7 +124,7 @@
       name: 'Tiếng Việt',
       messages: {
         badgeTitle: 'Tài khoản đã xác minh',
-        optionsTitle: 'Facebook Verified Badge',
+        optionsTitle: 'Verified Badge for Facebook',
         optionsSubtitle: 'Hiển thị huy hiệu đã xác minh bên cạnh tên Facebook của bạn',
         sectionGeneral: 'Chung',
         enabledLabel: 'Bật huy hiệu',

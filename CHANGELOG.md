@@ -3,6 +3,15 @@
 All notable changes to this project are documented here.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project adheres to [Semantic Versioning](https://semver.org/).
 
+## [1.4.1] - 2026-10-15
+
+### Changed
+- Renamed to **Verified Badge for Facebook** and replaced the icon with an original design, ahead of the Chrome Web Store submission.
+- No longer reads the `c_user` cookie; the user ID comes only from the page data.
+
+### Added
+- `PRIVACY.md` (English and Vietnamese), used as the Chrome Web Store privacy policy.
+
 ## [1.4.0] - 2026-10-15
 
 ### Added

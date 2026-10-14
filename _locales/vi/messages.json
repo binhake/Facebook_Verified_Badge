@@ -1,10 +1,10 @@
 {
   "extName": {
-    "message": "Facebook Verified Badge",
-    "description": "Tên extension hiển thị trong trình duyệt."
+    "message": "Verified Badge for Facebook",
+    "description": "Tên extension hiển thị trong trình duyệt và Chrome Web Store."
   },
   "extDescription": {
-    "message": "Hiển thị huy hiệu tích xanh trang trí cạnh tên bạn trên Facebook. Chỉ hiển thị trên trình duyệt của bạn.",
-    "description": "Mô tả extension hiển thị trong trình duyệt."
+    "message": "Huy hiệu trang trí cạnh tên bạn trên Facebook, chỉ hiển thị trên trình duyệt của bạn. Không liên kết với Meta.",
+    "description": "Mô tả extension (tối đa 132 ký tự)."
   }
 }

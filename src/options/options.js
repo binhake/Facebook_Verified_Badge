@@ -1,5 +1,5 @@
 /*!
- * Facebook Verified Badge — options page (also used as the toolbar popup)
+ * Verified Badge for Facebook — options page (also used as the toolbar popup)
  */
 (function (FBVB) {
   'use strict';

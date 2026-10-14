@@ -1,8 +1,10 @@
 <div align="center">
 
-<img src="icons/icon128.png" width="96" height="96" alt="Biểu tượng Facebook Verified Badge">
+<img src="icons/icon128.png" width="96" height="96" alt="Biểu tượng Verified Badge for Facebook">
 
-# Facebook Verified Badge
+# Verified Badge for Facebook
+
+<sub>Repository: Facebook_Verified_Badge</sub>
 
 Extension trình duyệt gọn nhẹ, hiển thị **huy hiệu tích xanh trang trí** cạnh tên bạn trên Facebook — ở trang chủ và trang cá nhân.
 
@@ -276,6 +278,7 @@ Facebook_Verified_Badge/
 ├── icons/                   # Icon 16 / 48 / 128 px
 ├── docs/images/             # Hình minh hoạ cho README
 ├── CHANGELOG.md
+├── PRIVACY.md
 ├── LICENSE
 ├── README.md                # Tiếng Anh
 └── README.vi.md             # Tiếng Việt
@@ -286,6 +289,7 @@ Facebook_Verified_Badge/
 - Quyền duy nhất là `storage`, dùng để lưu tuỳ chọn và ngôn ngữ đã import. Content script được nạp trên `*.facebook.com` và không làm gì nếu trang không khớp URL nào trong danh sách.
 - Tên và ID tài khoản được đọc từ trang hiện tại trong bộ nhớ, chỉ dùng để tìm vị trí tên trên màn hình, không lưu và không gửi đi.
 - Không analytics, không tải code từ xa, không có request mạng.
+- Chính sách đầy đủ: [PRIVACY.md](PRIVACY.md).
 
 ## Giới hạn
 

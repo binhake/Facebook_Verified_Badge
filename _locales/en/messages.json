@@ -1,10 +1,10 @@
 {
   "extName": {
-    "message": "Facebook Verified Badge",
-    "description": "Extension name shown in the browser."
+    "message": "Verified Badge for Facebook",
+    "description": "Extension name shown in the browser and the Chrome Web Store."
   },
   "extDescription": {
-    "message": "Shows a cosmetic verified badge next to your name on Facebook. Local only — visible in your browser alone.",
-    "description": "Extension description shown in the browser."
+    "message": "Cosmetic badge next to your name on Facebook, visible only in your own browser. Not affiliated with Meta.",
+    "description": "Extension description (max 132 characters)."
   }
 }

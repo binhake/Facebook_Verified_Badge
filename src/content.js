@@ -1,5 +1,5 @@
 /*!
- * Facebook Verified Badge — content script
+ * Verified Badge for Facebook — content script
  * https://github.com/binhake/Facebook_Verified_Badge
  *
  * Adds a cosmetic verified badge next to a name on Facebook:
@@ -69,11 +69,6 @@
     return el.getClientRects().length > 0;
   }
 
-  function readCookie(name) {
-    const match = document.cookie.match(new RegExp('(?:^|;\\s*)' + name + '=([^;]+)'));
-    return match ? decodeURIComponent(match[1]) : '';
-  }
-
   function decodeJsonString(raw) {
     try {
       return JSON.parse('"' + raw + '"');
@@ -103,7 +98,7 @@
 
       const idMatch = text.match(VIEWER_ID_RE);
       appState.viewer = {
-        id: idMatch ? idMatch[1] : readCookie('c_user'),
+        id: idMatch ? idMatch[1] : '',
         name: normalizeText(decodeJsonString(nameMatch[1]))
       };
       log('Signed in as "' + appState.viewer.name + '" (' + appState.viewer.id + ')');
