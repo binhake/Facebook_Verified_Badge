@@ -1,0 +1,14 @@
+{
+  "extName": {
+    "message": "Facebook Verified Badge",
+    "description": "Tên extension hiển thị trong trình duyệt."
+  },
+  "extDescription": {
+    "message": "Hiển thị huy hiệu tích xanh trang trí cạnh tên bạn trên Facebook. Chỉ hiển thị trên trình duyệt của bạn.",
+    "description": "Mô tả extension hiển thị trong trình duyệt."
+  },
+  "badgeTitle": {
+    "message": "Tài khoản đã xác minh",
+    "description": "Tooltip và nhãn trợ năng của huy hiệu."
+  }
+}

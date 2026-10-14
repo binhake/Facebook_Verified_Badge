@@ -1,0 +1,14 @@
+{
+  "extName": {
+    "message": "Facebook Verified Badge",
+    "description": "Extension name shown in the browser."
+  },
+  "extDescription": {
+    "message": "Shows a cosmetic verified badge next to your name on Facebook. Local only — visible in your browser alone.",
+    "description": "Extension description shown in the browser."
+  },
+  "badgeTitle": {
+    "message": "Verified account",
+    "description": "Tooltip and accessible label of the badge."
+  }
+}
